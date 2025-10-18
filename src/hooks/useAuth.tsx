@@ -9,6 +9,10 @@ interface User {
   phone_number: string;
   credit_score: number;
   created_at: string;
+  avatar_url?: string;
+  payment_history: number;
+  total_expenses: number;
+  groups_count: number;
 }
 
 interface AuthContextType {
@@ -17,6 +21,7 @@ interface AuthContextType {
   signup: (name: string, email: string, phone: string, password: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
+  updateUser: (updates: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -66,6 +71,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       password,
       credit_score: 750,
       created_at: new Date().toISOString(),
+      avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
+      payment_history: 100,
+      total_expenses: 0,
+      groups_count: 0,
     };
 
     users.push(newUser);
@@ -86,8 +95,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     navigate('/auth');
   };
 
+  const updateUser = (updates: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+      localStorage.setItem('gawa_user', JSON.stringify(updatedUser));
+      
+      // Update in users array as well
+      const users = JSON.parse(localStorage.getItem('gawa_users') || '[]');
+      const userIndex = users.findIndex((u: any) => u.id === user.id);
+      if (userIndex !== -1) {
+        users[userIndex] = { ...users[userIndex], ...updates };
+        localStorage.setItem('gawa_users', JSON.stringify(users));
+      }
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, isLoading, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

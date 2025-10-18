@@ -4,12 +4,16 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { initializeMockData } from "@/lib/mockData";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import GroupDetails from "./pages/GroupDetails";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+
+// Initialize mock data on app start
+initializeMockData();
 
 const queryClient = new QueryClient();
 

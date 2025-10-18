@@ -32,20 +32,20 @@ const Index = () => {
       </nav>
 
       <main>
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 text-center">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             Split Payments, Build Trust
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto px-4">
             The easiest way to split expenses with friends, track balances, and build your credit reputation
           </p>
-          <Button size="lg" onClick={() => navigate('/auth')} className="text-lg px-8 py-6">
+          <Button size="lg" onClick={() => navigate('/auth')} className="text-lg px-6 md:px-8 py-4 md:py-6 w-full sm:w-auto">
             Start Splitting Now
           </Button>
         </section>
 
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             <Card className="text-center hover:shadow-xl transition-shadow">
               <CardHeader>
                 <div className="mx-auto w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
@@ -90,13 +90,13 @@ const Index = () => {
           </div>
         </section>
 
-        <section className="bg-card/50 py-20">
+        <section className="bg-card/50 py-12 md:py-20">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold mb-6">Ready to simplify group expenses?</h2>
-            <p className="text-muted-foreground mb-8 text-lg">
+            <h2 className="text-2xl md:text-3xl font-bold mb-6">Ready to simplify group expenses?</h2>
+            <p className="text-muted-foreground mb-8 text-base md:text-lg">
               Join Gawa today and never worry about who owes what again
             </p>
-            <Button size="lg" onClick={() => navigate('/auth')} className="text-lg px-8 py-6">
+            <Button size="lg" onClick={() => navigate('/auth')} className="text-lg px-6 md:px-8 py-4 md:py-6 w-full sm:w-auto">
               Create Free Account
             </Button>
           </div>
