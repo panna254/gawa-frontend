@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Plus, Users, DollarSign, LogOut, User, TrendingUp, Receipt, Calendar, ArrowUpRight } from 'lucide-react';
+import { Plus, Users, DollarSign, LogOut, User, TrendingUp, Receipt, Calendar, ArrowUpRight, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Group, getUserById, getGroupCategoryIcon, calculateGroupBalances } from '@/lib/mockData';
 
@@ -37,6 +37,9 @@ const Dashboard = () => {
     description: '', 
     category: 'general' as 'trip' | 'house' | 'event' | 'general' 
   });
+  const [groupMembers, setGroupMembers] = useState<Array<{ name: string; phone: string }>>([
+    { name: '', phone: '' }
+  ]);
 
   useEffect(() => {
     if (!user) {
@@ -84,11 +87,51 @@ const Dashboard = () => {
       return;
     }
 
+    // Validate members
+    const validMembers = groupMembers.filter(m => m.name.trim() && m.phone.trim());
+    if (validMembers.length === 0) {
+      toast({ title: 'Error', description: 'Please add at least one member with phone number', variant: 'destructive' });
+      return;
+    }
+
+    // Validate phone numbers (basic check for 10-15 digits)
+    const phoneRegex = /^\+?\d{10,15}$/;
+    const invalidPhone = validMembers.find(m => !phoneRegex.test(m.phone.replace(/\s/g, '')));
+    if (invalidPhone) {
+      toast({ title: 'Error', description: 'Please enter valid phone numbers (10-15 digits)', variant: 'destructive' });
+      return;
+    }
+
+    // Create or find user IDs for members
+    const allUsers = JSON.parse(localStorage.getItem('gawa_users') || '[]');
+    const memberIds = validMembers.map(member => {
+      const normalizedPhone = member.phone.replace(/\s/g, '');
+      let existingUser = allUsers.find((u: any) => u.phone_number.replace(/\s/g, '') === normalizedPhone);
+      
+      if (!existingUser) {
+        existingUser = {
+          id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          email: `${normalizedPhone}@gawa.app`,
+          name: member.name,
+          phone_number: member.phone,
+          credit_score: 700,
+          created_at: new Date().toISOString(),
+          payment_history: 0,
+          total_expenses: 0,
+          groups_count: 1,
+        };
+        allUsers.push(existingUser);
+      }
+      return existingUser.id;
+    });
+
+    localStorage.setItem('gawa_users', JSON.stringify(allUsers));
+
     const group: Group = {
       id: Date.now().toString(),
       title: newGroup.title,
       description: newGroup.description,
-      members: [user!.id],
+      members: [user!.id, ...memberIds],
       created_at: new Date().toISOString(),
       balance: 0,
       total_expenses: 0,
@@ -104,9 +147,29 @@ const Dashboard = () => {
 
     setGroups([...groups, group]);
     setNewGroup({ title: '', description: '', category: 'general' });
+    setGroupMembers([{ name: '', phone: '' }]);
     setIsDialogOpen(false);
-    toast({ title: 'Success', description: 'Group created successfully!' });
+    toast({ 
+      title: 'Success', 
+      description: `Group created with ${validMembers.length} member(s)! Phone numbers saved for STK push.` 
+    });
     loadGroups(); // Reload to update stats
+  };
+
+  const addMemberField = () => {
+    setGroupMembers([...groupMembers, { name: '', phone: '' }]);
+  };
+
+  const removeMemberField = (index: number) => {
+    if (groupMembers.length > 1) {
+      setGroupMembers(groupMembers.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateMember = (index: number, field: 'name' | 'phone', value: string) => {
+    const updated = [...groupMembers];
+    updated[index][field] = value;
+    setGroupMembers(updated);
   };
 
   return (
@@ -182,6 +245,57 @@ const Dashboard = () => {
                       <SelectItem value="event">Event</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base">Group Members</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addMemberField}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Member
+                    </Button>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Add members with phone numbers for STK push payments
+                  </p>
+                  
+                  <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+                    {groupMembers.map((member, index) => (
+                      <div key={index} className="space-y-2 p-3 bg-muted/50 rounded-lg">
+                        <div className="flex items-start gap-2">
+                          <div className="flex-1 space-y-2">
+                            <Input
+                              placeholder="Member name"
+                              value={member.name}
+                              onChange={(e) => updateMember(index, 'name', e.target.value)}
+                            />
+                            <Input
+                              type="tel"
+                              placeholder="+254 700 123456"
+                              value={member.phone}
+                              onChange={(e) => updateMember(index, 'phone', e.target.value)}
+                            />
+                          </div>
+                          {groupMembers.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeMemberField(index)}
+                              className="shrink-0"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
               <DialogFooter>
